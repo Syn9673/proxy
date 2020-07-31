@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@types/node": "^14.0.23",
+    "node-addon-api": "^3.0.1",
+    "protonsdk-variant": "^1.1.1"
+  }
+}
