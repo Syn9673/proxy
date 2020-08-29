@@ -3,7 +3,7 @@ import * as fs from "fs";
 import Tank from "./Tank";
 const addon = require("./src/build/Release/index");
 
-addon.init("213.179.209.168", 17273, false);
+addon.init("213.179.209.168", 17237, false);
 addon.init_server();
 
 let userid: string | undefined = undefined;
@@ -29,12 +29,25 @@ const $ = () => {
                 console.log("received action from gt server", x.toString());
                 }
 
-                if (x[4] === 5 && x[0] === 4) {
-                    console.log(`[FROM GT SERVER]: Received door/sign update?`, x.toString("hex").match(/.{2}|.{1}/g).join(" "));
+                if (x[4] === 0x10) {
+                console.log(`[ITEMS DAT] SAVED TO FILE`)
+                    fs.writeFileSync(`${__dirname}/worlds/items_dat.hex`, x.toString("hex").match(/.{2}|.{1}/g).join(" "));
                 }
 
                 if (x[4] === 5 && x[0] === 4) {
                     console.log(`[FROM GT SERVER]: Received door/sign update?`, x.toString("hex").match(/.{2}|.{1}/g).join(" "));
+                }
+
+                if (x[4] === 17) {
+                	console.log(`[FROM GT SERVER]: Effect?`, x.toString("hex").match(/.{2}|.{1}/g).join(" "));
+                }
+
+                if (x[4] === 12) {
+                	console.log(`[FROM GT SERVER]: Harvest?`, x.toString("hex").match(/.{2}|.{1}/g).join(" "))
+                }
+
+                if (x[0] === 4 && x[4] === 3 && x.length >= 60) {
+                	console.log(`[FROM GT SERVER]: Placed/Harvested seed`, x.toString("hex").match(/.{2}|.{1}/g).join(" "))
                 }
 
                 if (x[0] === 4 && x.length >= 60 && (new Tank().unpack(x).type === 14 || new Tank().unpack(x).type === 11)) {
@@ -45,8 +58,17 @@ const $ = () => {
                 	console.log(`[FROM GT SERVER]: Received state update`, x.toString("hex").match(/.{2}|.{1}/g).join(" "))
                 }
 
+                if (x[0] === 4 && x[4] === 13) {
+                    console.log(`[FROM GT SERVER]: TRADE EFFECT?`, x.toString("hex").match(/.{2}|.{1}/g).join(" "))
+                }
+
+                if (x[0] === 4 && x[4] === 19) {
+                    console.log(`[FROM GT SERVER]: TRADE EFFECT?`, x.toString("hex").match(/.{2}|.{1}/g).join(" "))
+                }
+
                 if (x[0] === 4 && x[4] === 1) {
                     let variant = Variant.from(x);
+                    console.log(variant.packet.toString("hex").match(/.{2}|.{1}/g).join(" "))
                     console.log(`Received Variant packet`, variant)
                     if (variant.args[0] === "OnSetPos")
                         console.log(variant.packet.toString("hex").match(/.{2}|.{1}/g).join(" "))
@@ -97,10 +119,13 @@ const $ = () => {
                     let redir = Variant.from(x);
                     let varlist = new Variant();
 
-                    token = redir.args[2] as string;
+                    if (!token)
+                    	token = redir.args[2] as string;
+                    	
                     userid = redir.args[3] as string;
                     lmode = redir.args[5] as string;
 
+                    console.log(redir.args)
                     addon.send_client(varlist.call("OnConsoleMessage", "`4[PROXY]`` Switching subserver...").packet)
 
                     has_redir = true;
